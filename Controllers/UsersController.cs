@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using MySqlConnector;
 using dotapi.Models;
 
@@ -6,6 +7,7 @@ namespace dotapi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class UsersController : ControllerBase
 {
     private readonly MySqlConnection _connection;
@@ -68,15 +70,27 @@ public class UsersController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<User>> PostUser(User user)
     {
-        await _connection.OpenAsync();
-        using var command = new MySqlCommand("INSERT INTO users (username, name, email) VALUES (@username, @name, @email); SELECT LAST_INSERT_ID();", _connection);
-        command.Parameters.AddWithValue("@username", user.Username);
-        command.Parameters.AddWithValue("@name", user.Name);
-        command.Parameters.AddWithValue("@email", user.Email);
-        var id = Convert.ToInt32(await command.ExecuteScalarAsync());
-        user.Id = id;
-        await _connection.CloseAsync();
-        return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
+        try
+        {
+            await _connection.OpenAsync();
+            using var command = new MySqlCommand("INSERT INTO users (username, name, email, password) VALUES (@username, @name, @email, @password); SELECT LAST_INSERT_ID();", _connection);
+            command.Parameters.AddWithValue("@username", user.Username);
+            command.Parameters.AddWithValue("@name", user.Name);
+            command.Parameters.AddWithValue("@email", user.Email);
+            command.Parameters.AddWithValue("@password", BCrypt.Net.BCrypt.HashPassword(user.Password));
+            var id = Convert.ToInt32(await command.ExecuteScalarAsync());
+            user.Id = id;
+            await _connection.CloseAsync();
+            return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
+        }
+        catch (MySqlConnector.MySqlException ex) when (ex.Number == 1062)
+        {
+            return BadRequest(new { Message = "Username or email already exists." });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { Message = "An error occurred while creating user.", Error = ex.Message });
+        }
     }
 
     // PUT: api/users/5
@@ -88,38 +102,57 @@ public class UsersController : ControllerBase
             return BadRequest();
         }
 
-        await _connection.OpenAsync();
-        using var command = new MySqlCommand("UPDATE users SET username = @username, name = @name, email = @email WHERE id = @id", _connection);
-        command.Parameters.AddWithValue("@username", user.Username);
-        command.Parameters.AddWithValue("@name", user.Name);
-        command.Parameters.AddWithValue("@email", user.Email);
-        command.Parameters.AddWithValue("@id", id);
-        var rowsAffected = await command.ExecuteNonQueryAsync();
-        await _connection.CloseAsync();
-
-        if (rowsAffected == 0)
+        try
         {
-            return NotFound();
-        }
+            await _connection.OpenAsync();
+            using var command = new MySqlCommand("UPDATE users SET username = @username, name = @name, email = @email, password = @password WHERE id = @id", _connection);
+            command.Parameters.AddWithValue("@username", user.Username);
+            command.Parameters.AddWithValue("@name", user.Name);
+            command.Parameters.AddWithValue("@email", user.Email);
+            command.Parameters.AddWithValue("@password", BCrypt.Net.BCrypt.HashPassword(user.Password));
+            command.Parameters.AddWithValue("@id", id);
+            var rowsAffected = await command.ExecuteNonQueryAsync();
+            await _connection.CloseAsync();
 
-        return NoContent();
+            if (rowsAffected == 0)
+            {
+                return NotFound();
+            }
+
+            return NoContent();
+        }
+        catch (MySqlConnector.MySqlException ex) when (ex.Number == 1062)
+        {
+            return BadRequest(new { Message = "Username or email already exists." });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { Message = "An error occurred while updating user.", Error = ex.Message });
+        }
     }
 
     // DELETE: api/users/5
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteUser(int id)
     {
-        await _connection.OpenAsync();
-        using var command = new MySqlCommand("DELETE FROM users WHERE id = @id", _connection);
-        command.Parameters.AddWithValue("@id", id);
-        var rowsAffected = await command.ExecuteNonQueryAsync();
-        await _connection.CloseAsync();
-
-        if (rowsAffected == 0)
+        try
         {
-            return NotFound();
-        }
+            await _connection.OpenAsync();
+            using var command = new MySqlCommand("DELETE FROM users WHERE id = @id", _connection);
+            command.Parameters.AddWithValue("@id", id);
+            var rowsAffected = await command.ExecuteNonQueryAsync();
+            await _connection.CloseAsync();
 
-        return NoContent();
+            if (rowsAffected == 0)
+            {
+                return NotFound();
+            }
+
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { Message = "An error occurred while deleting user.", Error = ex.Message });
+        }
     }
 }

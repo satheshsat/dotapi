@@ -26,31 +26,42 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
-        // Check if user exists
-        await _connection.OpenAsync();
-        using var checkCommand = new MySqlCommand("SELECT COUNT(*) FROM users WHERE username = @username OR email = @email", _connection);
-        checkCommand.Parameters.AddWithValue("@username", request.Username);
-        checkCommand.Parameters.AddWithValue("@email", request.Email);
-        var count = Convert.ToInt32(await checkCommand.ExecuteScalarAsync());
-        if (count > 0)
+        try
         {
+            // Check if user exists
+            await _connection.OpenAsync();
+            using var checkCommand = new MySqlCommand("SELECT COUNT(*) FROM users WHERE username = @username OR email = @email", _connection);
+            checkCommand.Parameters.AddWithValue("@username", request.Username);
+            checkCommand.Parameters.AddWithValue("@email", request.Email);
+            var count = Convert.ToInt32(await checkCommand.ExecuteScalarAsync());
+            if (count > 0)
+            {
+                await _connection.CloseAsync();
+                return BadRequest(new { Message = "Username or email already exists." });
+            }
+
+            // Hash password
+            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
+
+            // Insert user
+            using var insertCommand = new MySqlCommand("INSERT INTO users (username, name, email, password) VALUES (@username, @name, @email, @password); SELECT LAST_INSERT_ID();", _connection);
+            insertCommand.Parameters.AddWithValue("@username", request.Username);
+            insertCommand.Parameters.AddWithValue("@name", request.Name);
+            insertCommand.Parameters.AddWithValue("@email", request.Email);
+            insertCommand.Parameters.AddWithValue("@password", hashedPassword);
+            var id = Convert.ToInt32(await insertCommand.ExecuteScalarAsync());
             await _connection.CloseAsync();
+
+            return Ok(new { Message = "User registered successfully.", UserId = id });
+        }
+        catch (MySqlConnector.MySqlException ex) when (ex.Number == 1062)
+        {
             return BadRequest(new { Message = "Username or email already exists." });
         }
-
-        // Hash password
-        var hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
-
-        // Insert user
-        using var insertCommand = new MySqlCommand("INSERT INTO users (username, name, email, password) VALUES (@username, @name, @email, @password); SELECT LAST_INSERT_ID();", _connection);
-        insertCommand.Parameters.AddWithValue("@username", request.Username);
-        insertCommand.Parameters.AddWithValue("@name", request.Name);
-        insertCommand.Parameters.AddWithValue("@email", request.Email);
-        insertCommand.Parameters.AddWithValue("@password", hashedPassword);
-        var id = Convert.ToInt32(await insertCommand.ExecuteScalarAsync());
-        await _connection.CloseAsync();
-
-        return Ok(new { Message = "User registered successfully.", UserId = id });
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { Message = "An error occurred during registration.", Error = ex.Message });
+        }
     }
 
     // POST: api/auth/login

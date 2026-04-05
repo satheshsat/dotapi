@@ -41,3 +41,4 @@ C:\Users\user\Documents\dotapi\bin\Debug\net10.0\Microsoft.IdentityModel.Protoco
 C:\Users\user\Documents\dotapi\bin\Debug\net10.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
 C:\Users\user\Documents\dotapi\bin\Debug\net10.0\Microsoft.IdentityModel.Tokens.dll
 C:\Users\user\Documents\dotapi\bin\Debug\net10.0\System.IdentityModel.Tokens.Jwt.dll
+C:\Users\user\Documents\dotapi\obj\Debug\net10.0\dotapi.sourcelink.json

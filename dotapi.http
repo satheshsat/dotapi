@@ -1,6 +1,6 @@
-@dotapi_HostAddress = http://localhost:5256
+@dotnetapi_HostAddress = http://localhost:5256
 
-GET {{dotapi_HostAddress}}/weatherforecast/
+GET {{dotnetapi_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###

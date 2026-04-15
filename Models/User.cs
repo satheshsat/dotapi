@@ -1,4 +1,4 @@
-namespace dotapi.Models;
+namespace dotnetapi.Models;
 
 public class User
 {

@@ -1,13 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
-using dotapi.Models;
+using dotnetapi.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using BCrypt.Net;
 
-namespace dotapi.Controllers;
+namespace dotnetapi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

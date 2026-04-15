@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using MySqlConnector;
-using dotapi.Models;
+using dotnetapi.Models;
 
-namespace dotapi.Controllers;
+namespace dotnetapi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

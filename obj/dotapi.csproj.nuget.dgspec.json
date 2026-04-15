@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\user\\Documents\\dotapi\\dotapi.csproj": {}
+    "C:\\Users\\user\\Documents\\dotnetapi\\dotapi.csproj": {}
   },
   "projects": {
-    "C:\\Users\\user\\Documents\\dotapi\\dotapi.csproj": {
+    "C:\\Users\\user\\Documents\\dotnetapi\\dotapi.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\user\\Documents\\dotapi\\dotapi.csproj",
+        "projectUniqueName": "C:\\Users\\user\\Documents\\dotnetapi\\dotapi.csproj",
         "projectName": "dotapi",
-        "projectPath": "C:\\Users\\user\\Documents\\dotapi\\dotapi.csproj",
+        "projectPath": "C:\\Users\\user\\Documents\\dotnetapi\\dotapi.csproj",
         "packagesPath": "C:\\Users\\user\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\user\\Documents\\dotapi\\obj\\",
+        "outputPath": "C:\\Users\\user\\Documents\\dotnetapi\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\user\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -59,6 +59,10 @@
             "MySqlConnector": {
               "target": "Package",
               "version": "[2.5.0, )"
+            },
+            "Swashbuckle.AspNetCore": {
+              "target": "Package",
+              "version": "[10.1.7, )"
             },
             "System.IdentityModel.Tokens.Jwt": {
               "target": "Package",
